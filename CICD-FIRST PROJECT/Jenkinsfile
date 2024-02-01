@@ -1,0 +1,42 @@
+pipeline {
+    agent any 
+   
+
+    stages {
+        stage('git pull the code') {
+            steps {
+                 //git pull 
+                 git 'https://github.com/Hari25cs/SampleWebApp.git'
+            }
+        }
+        stage('build the code with ant') {
+            steps {
+                // using ant to build
+                bat 'ant checkstyle'
+            }
+        }
+        stage('test the code') {
+            steps {
+                // testing using junit
+                    bat 'ant junit'
+            }
+        }
+        stage('.war file build') {
+            steps {
+                //build war
+                bat 'ant war'
+                deploy adapters: [tomcat8(credentialsId: '3f941317-bcfa-45b7-b700-00d8faccad14', path: '', url: 'http://localhost:8080/')], contextPath: null, war: '**/*.war'
+            }
+        }
+    }    
+        
+    post {
+        always {
+            junit 'TestCalculator_JUnitResult.xml'
+        }
+        failure {
+            
+            echo 'Something Went Wrong'
+        }
+    }
+ }
